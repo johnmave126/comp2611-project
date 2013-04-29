@@ -12,6 +12,7 @@ struct input wrap_igp() {
     struct input t;
     t.bomb = width;
     t.cool = 3;
+    t.air = 10;
     return t;
 }
 
