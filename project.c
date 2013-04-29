@@ -8,7 +8,7 @@ inline int max(a, b){
     return (a>b)?(a):(b);
 }
 
-struct input wrap_igp() __attribute__ ((noinline)) {
+struct input __attribute__ ((noinline)) wrap_igp() {
     __asm(
         "addi   $sp, $sp, -24\n\t"
         "sw     $4, 16($sp)\n\t"
