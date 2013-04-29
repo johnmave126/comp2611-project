@@ -31,9 +31,11 @@ void create_remote_bomb(int id, int x_loc, int y_loc, int speed) {
 
 int getX(int id) {
     const register int t1 asm("a0") = id;
+    register int t2 asm("v0");
     __asm__(
         "li     $v0, 110\n\t"
         "syscall\n\t"::"r"(t1));
+    return t2;
 }
 
 int getY(int id) {
