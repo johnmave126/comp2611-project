@@ -9,11 +9,23 @@ inline int max(a, b){
 }
 
 struct input wrap_igp() {
-    struct input t;
-    t.bomb = width;
-    t.cool = 3;
-    t.air = 10;
-    return t;
+    __asm__(
+        "addi   $sp, $sp, -24\n"
+        "sw     $4, 16($sp)\n"
+        "sw     $ra, 20($sp)\n"
+        "jal    input_game_params\n"
+        "lw     $2, 16($sp)\n"
+        "lw     $ra, 20($sp)\n"
+        "lw     $t0, 0($sp)\n"
+        "sw     $t0, 0($2)\n"
+        "lw     $t0, 4($sp)\n"
+        "sw     $t0, 4($2)\n"
+        "lw     $t0, 8($sp)\n"
+        "sw     $t0, 8($2)\n"
+        "lw     $t0, 12($sp)\n"
+        "sw     $t0, 12($2)\n"
+        "addi   $sp, $sp, 24\n"
+        "jr     $ra\n");
 }
 
 int check_intersection(int *rec1, int *rec2) {
