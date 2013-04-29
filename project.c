@@ -8,8 +8,11 @@ inline int max(a, b){
     return (a>b)?(a):(b);
 }
 
-volatile struct input wrap_igp() {
-    return input_game_params();
+struct input wrap_igp() {
+    struct input t;
+    t.bomb = width;
+    t.cool = 3;
+    return t;
 }
 
 int check_intersection(int *rec1, int *rec2) {
