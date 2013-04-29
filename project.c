@@ -24,6 +24,26 @@ void create_remote_bomb(int id, int x_loc, int y_loc, int speed) {
         "syscall\n\t":::"v0");
 }
 
+int getX(int id) {
+    int x;
+    __asm__(
+        "move   $a0, %1\n\t"
+        "li     $v0, 110\n\t"
+        "syscall\n\t"
+        "move   %0, $v0\n\t":"=r"(x):"r"(id):"a0");
+    return x;
+}
+
+int getY(int id) {
+    int x;
+    __asm__(
+        "move   $a0, %1\n\t"
+        "li     $v0, 110\n\t"
+        "syscall\n\t"
+        "move   %0, $v1\n\t":"=r"(x):"r"(id):"a0");
+    return x;
+}
+
 void emit_one_bomb() {
     if(bomb_count < bomb_num) {
         
