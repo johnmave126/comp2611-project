@@ -52,7 +52,7 @@ int getHit(int id) {
     register int t2 asm("v0");
     __asm__(
         "li     $v0, 118\n\t"
-        "syscall\n\t"::"r"(t1):"v0");
+        "syscall\n\t":"=r"(t2):"r"(t1));
     return t2;
 }
 
