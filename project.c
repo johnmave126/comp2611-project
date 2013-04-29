@@ -12,13 +12,13 @@ inline int max(a, b){
 void create_simple_bomb(int id, int x_loc, int y_loc, int speed) {
     __asm__(
         "li     $v0, 106\n\t"
-        "syscall\n\t");
+        "syscall\n\t"::"r"(id),"r"(x_loc),"r"(y_loc),"r"(speed));
 }
 
 void create_remote_bomb(int id, int x_loc, int y_loc, int speed) {
     __asm__(
         "li     $v0, 107\n\t"
-        "syscall\n\t");
+        "syscall\n\t"::"r"(id),"r"(x_loc),"r"(y_loc),"r"(speed));
 }
 
 int getX(int id) {
