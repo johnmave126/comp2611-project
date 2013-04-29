@@ -8,6 +8,10 @@ inline int max(a, b){
     return (a>b)?(a):(b);
 }
 
+volatile struct input wrap_igp() {
+    return input_game_params();
+}
+
 int check_intersection(int *rec1, int *rec2) {
     if(max(rec1[0], rec2[0]) > min(rec1[2], rec1[2])) {
         return 0;
@@ -20,7 +24,7 @@ int check_intersection(int *rec1, int *rec2) {
 
 struct input test() {
     struct input t;
-    t = input_game_params();
+    t = wrap_igp();
     t.bomb += t.cool;
     t.bomb -= t.air;
     return t;
