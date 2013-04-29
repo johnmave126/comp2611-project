@@ -10,15 +10,23 @@ inline int max(a, b){
 
 
 void create_simple_bomb(int id, int x_loc, int y_loc, int speed) {
+    const register int t1 asm("a0") = id;
+    const register int t2 asm("a1") = x_loc;
+    const register int t3 asm("a2") = y_loc;
+    const register int t4 asm("a3") = speed;
     __asm__(
         "li     $v0, 106\n\t"
-        "syscall\n\t"::"r"(id),"r"(x_loc),"r"(y_loc),"r"(speed));
+        "syscall\n\t"::"r"(t1), "r"(t2), "r"(t3), "r"(t4));
 }
 
 void create_remote_bomb(int id, int x_loc, int y_loc, int speed) {
+    const register int t1 asm("a0") = id;
+    const register int t2 asm("a1") = x_loc;
+    const register int t3 asm("a2") = y_loc;
+    const register int t4 asm("a3") = speed;
     __asm__(
         "li     $v0, 107\n\t"
-        "syscall\n\t"::"r"(id),"r"(x_loc),"r"(y_loc),"r"(speed));
+        "syscall\n\t"::"r"(t1), "r"(t2), "r"(t3), "r"(t4));
 }
 
 int getX(int id) {
