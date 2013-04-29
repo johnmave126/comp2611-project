@@ -8,5 +8,4 @@ struct input {
     int cool;
 };
 
-input input_game_params();
-
+struct input input_game_params();

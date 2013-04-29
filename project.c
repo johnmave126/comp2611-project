@@ -19,7 +19,7 @@ int check_intersection(int *rec1, int *rec2) {
 }
 
 int test() {
-    input t;
+    struct input t;
     t = input_game_params();
     return t.bomb;
 }
