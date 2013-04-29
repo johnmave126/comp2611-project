@@ -21,5 +21,7 @@ int check_intersection(int *rec1, int *rec2) {
 int test() {
     struct input t;
     t = input_game_params();
+    t.bomb += t.cool;
+    t.bomb -= t.air;
     return t.bomb;
 }
