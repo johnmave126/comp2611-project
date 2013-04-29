@@ -1,10 +1,10 @@
 #include "project.h"
 
-int min(a, b){
+inline int min(a, b){
     return (a<b)?(a):(b);
 }
 
-int max(a, b){
+inline int max(a, b){
     return (a>b)?(a):(b);
 }
 
@@ -16,4 +16,10 @@ int check_intersection(int *rec1, int *rec2) {
         return 0;
     }
     return 1;
+}
+
+int test() {
+    input t;
+    t = input_game_params();
+    return t.bomb;
 }
