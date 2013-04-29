@@ -1,0 +1,1 @@
+int bomb_ids;

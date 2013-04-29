@@ -11,3 +11,10 @@
 *.lai
 *.la
 *.a
+
+#asm
+*.s
+*.S
+
+#sublime-text-2
+*.sublime*
