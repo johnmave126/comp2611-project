@@ -1,1 +1,1 @@
-int bomb_ids;
+extern int bomb_ids;
