@@ -8,24 +8,24 @@ inline int max(a, b){
     return (a>b)?(a):(b);
 }
 
-struct input wrap_igp() {
+struct input wrap_igp() __attribute__ ((noinline)) {
     __asm(
-        "addi   $sp, $sp, -24\n"
-        "sw     $4, 16($sp)\n"
-        "sw     $ra, 20($sp)\n"
-        "jal    input_game_params\n"
-        "lw     $2, 16($sp)\n"
-        "lw     $ra, 20($sp)\n"
-        "lw     $t0, 0($sp)\n"
-        "sw     $t0, 0($2)\n"
-        "lw     $t0, 4($sp)\n"
-        "sw     $t0, 4($2)\n"
-        "lw     $t0, 8($sp)\n"
-        "sw     $t0, 8($2)\n"
-        "lw     $t0, 12($sp)\n"
-        "sw     $t0, 12($2)\n"
-        "addi   $sp, $sp, 24\n"
-        "jr     $ra\n");
+        "addi   $sp, $sp, -24\n\t"
+        "sw     $4, 16($sp)\n\t"
+        "sw     $ra, 20($sp)\n\t"
+        "jal    input_game_params\n\t"
+        "lw     $2, 16($sp)\n\t"
+        "lw     $ra, 20($sp)\n\t"
+        "lw     $t0, 0($sp)\n\t"
+        "sw     $t0, 0($2)\n\t"
+        "lw     $t0, 4($sp)\n\t"
+        "sw     $t0, 4($2)\n\t"
+        "lw     $t0, 8($sp)\n\t"
+        "sw     $t0, 8($2)\n\t"
+        "lw     $t0, 12($sp)\n\t"
+        "sw     $t0, 12($2)\n\t"
+        "addi   $sp, $sp, 24\n\t"
+        "jr     $ra\n\t");
 }
 
 int check_intersection(int *rec1, int *rec2) {
