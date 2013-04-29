@@ -9,7 +9,7 @@ inline int max(a, b){
 }
 
 struct input wrap_igp() {
-    __asm__(
+    __asm(
         "addi   $sp, $sp, -24\n"
         "sw     $4, 16($sp)\n"
         "sw     $ra, 20($sp)\n"
