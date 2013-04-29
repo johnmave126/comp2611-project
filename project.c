@@ -8,24 +8,26 @@ inline int max(a, b){
     return (a>b)?(a):(b);
 }
 
-struct input __attribute__ ((noinline)) wrap_igp() {
-    __asm(
-        "addi   $sp, $sp, -24\n\t"
-        "sw     $4, 16($sp)\n\t"
-        "sw     $ra, 20($sp)\n\t"
-        "jal    input_game_params\n\t"
-        "lw     $2, 16($sp)\n\t"
-        "lw     $ra, 20($sp)\n\t"
-        "lw     $t0, 0($sp)\n\t"
-        "sw     $t0, 0($2)\n\t"
-        "lw     $t0, 4($sp)\n\t"
-        "sw     $t0, 4($2)\n\t"
-        "lw     $t0, 8($sp)\n\t"
-        "sw     $t0, 8($2)\n\t"
-        "lw     $t0, 12($sp)\n\t"
-        "sw     $t0, 12($2)\n\t"
-        "addi   $sp, $sp, 24\n\t"
-        "jr     $ra\n\t");
+struct test {
+    int x, y;
+};
+
+void create_simple_bomb(int id, int x_loc, int y_loc, int speed) {
+    __asm__(
+        "li     $v0, 106\n\t"
+        "syscall\n\t":::"v0");
+}
+
+void create_remote_bomb(int id, int x_loc, int y_loc, int speed) {
+    __asm__(
+        "li     $v0, 107\n\t"
+        "syscall\n\t":::"v0");
+}
+
+void emit_one_bomb() {
+    if(bomb_count < bomb_num) {
+        
+    }
 }
 
 int check_intersection(int *rec1, int *rec2) {
@@ -38,10 +40,9 @@ int check_intersection(int *rec1, int *rec2) {
     return 1;
 }
 
-struct input test() {
-    struct input t;
-    t = wrap_igp();
-    t.bomb += t.cool;
-    t.bomb -= t.air;
+struct test pp() {
+    struct test t;
+    t.x = 19;
+    t.y = 20;
     return t;
 }
