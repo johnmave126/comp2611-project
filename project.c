@@ -121,8 +121,6 @@ void play_sound(int id) {
 
 void emit_one_bomb() {
     if(bomb_count < bomb_num) {
-        int x = getX(1);
-        int y = getY(1);
         create_simple_bomb(bomb_ids[bomb_count], getX(1), getY(1), 5);
         bomb_count++;
         update_bomb(bomb_num - bomb_count, rbomb_num - rbomb_count);
