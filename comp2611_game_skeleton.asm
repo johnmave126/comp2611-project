@@ -704,21 +704,27 @@ ar_next:
 # @return 1: true; 0: false
 #--------------------------------------------------------------------
 check_intersection:
-	lw	$v0, 0($a0)
-	lw	$v1, 0($a1)
-	lw	$a2, 8($a0)
-	slt	$a3, $v1, $v0
-	movn	$v1, $v0, $a3
-	slt	$v1, $a2, $v1
+	lw	$v1, 8($a1)
+	lw	$a2, 0($a0)
+	lw	$a3, 0($a1)
+	lw	$v0, 8($a0)
+	slt	$t1, $a3, $a2
+	slt	$t0, $v0, $v1
+	movz	$v0, $v1, $t0
+	movz	$a2, $a3, $t1
+	slt	$v1, $v0, $a2
 	addu	$v0, $zero, $zero
 	bne	$v1, $zero, ci_exit
 
-	lw	$v1, 4($a0)
+	lw	$v1, 12($a0)
+	lw	$a2, 12($a1)
+	lw	$a0, 4($a0)
 	lw	$a1, 4($a1)
-	lw	$a0, 12($a0)
-	slt	$v0, $a1, $v1
-	movz	$v1, $a1, $v0
-	slt	$v0, $a0, $v1
+	slt	$v0, $v1, $a2
+	slt	$a3, $a1, $a0
+	movz	$a0, $a1, $a3
+	movz	$v1, $a2, $v0
+	slt	$v0, $v1, $a0
 	xori	$v0, $v0, 0x1
 ci_exit:
 	jr	$ra

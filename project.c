@@ -253,7 +253,7 @@ __attribute__ ((noinline)) void check_one_bomb_hit(int id) {
             rec2[2] = rec2[0] + 80;
 
             if(check_intersection(rec1, rec2)) {
-                hit(subma_ids[i], getHit(subma_ids[i]));
+                hit(subma_ids[i], 5);
                 flag = 1;
             }
         }
