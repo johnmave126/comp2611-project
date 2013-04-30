@@ -206,7 +206,7 @@ void update_object_status() {
     update_bomb(bomb_num - bomb_count, rbomb_num - rbomb_count);
 }
 
-int check_intersection(int *rec1, int *rec2) {
+__attribute__ ((noinline)) int check_intersection(int *rec1, int *rec2) {
     if(max(rec1[0], rec2[0]) > min(rec1[2], rec1[2])) {
         return 0;
     }
