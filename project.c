@@ -34,7 +34,7 @@ int getX(int id) {
     register int t2 asm("v0");
     __asm__(
         "li     $v0, 110\n\t"
-        "syscall\n\t"::"r"(t1):"v0", "v1");
+        "syscall\n\t":"=r"(t2):"r"(t1):"v0", "v1");
     return t2;
 }
 
@@ -43,7 +43,7 @@ int getY(int id) {
     register int t2 asm("v1");
     __asm__(
         "li     $v0, 110\n\t"
-        "syscall\n\t"::"r"(t1):"v0", "v1");
+        "syscall\n\t":"=r"(t2):"r"(t1):"v0");
     return t2;
 }
 
@@ -52,7 +52,48 @@ int getHit(int id) {
     register int t2 asm("v0");
     __asm__(
         "li     $v0, 118\n\t"
-        "syscall\n\t":"=r"(t2):"r"(t1));
+        "syscall\n\t":"=r"(t2):"r"(t1):"v0");
+    return t2;
+}
+
+int getScore(int id) {
+    const register int t1 asm("a0") = id;
+    register int t2 asm("v0");
+    __asm__(
+        "li     $v0, 115\n\t"
+        "syscall\n\t":"=r"(t2):"r"(t1):"v0");
+    return t2;
+}
+
+void setScore(int score) {
+    const register int t1 asm("a0") = score;
+    __asm__(
+        "li     $v0, 117\n\t"
+        "syscall\n\t"::"r"(t1):"v0");
+}
+
+void update_bomb(int b, int r) {
+    const register int t1 asm("a0") = b;
+    const register int t2 asm("a1") = r;
+    __asm__(
+        "li     $v0, 123\n\t"
+        "syscall\n\t"::"r"(t1),"r"(t2):"v0");
+}
+
+void hit(int id, int point) {
+    const register int t1 asm("a0") = id;
+    const register int t2 asm("a1") = point;
+    __asm__(
+        "li     $v0, 114\n\t"
+        "syscall\n\t"::"r"(t1),"r"(t2):"v0");
+}
+
+int isActive(int id) {
+    const register int t1 asm("a0") = id;
+    register int t2 asm("v0");
+    __asm__(
+        "li     $v0, 108\n\t"
+        "syscall\n\t":"=r"(t2):"r"(t1):"v0");
     return t2;
 }
 
@@ -70,10 +111,20 @@ void activate_r_bomb(int id) {
         "syscall\n\t"::"r"(t1):"v0");
 }
 
+void play_sound(int id) {
+    const register int t1 asm("a0") = id;
+    __asm__(
+        "li     $a1, 0\n\t"
+        "li     $v0, 105\n\t"
+        "syscall\n\t"::"r"(t1):"a1");
+}
+
 void emit_one_bomb() {
     if(bomb_count < bomb_num) {
         create_simple_bomb(bomb_ids[bomb_count], getX(1), getY(1), 6);
         bomb_count++;
+        update_bomb(bomb_num - bomb_count, rbomb_num - rbomb_count);
+        play_sound(2);
     }
 }
 
@@ -81,6 +132,8 @@ void emit_one_rbomb() {
     if(rbomb_count < rbomb_num) {
         create_remote_bomb(rbomb_ids[rbomb_count], getX(1), getY(1), 6);
         rbomb_count++;
+        update_bomb(bomb_num - bomb_count, rbomb_num - rbomb_count);
+        play_sound(2);
     }
 }
 
@@ -111,6 +164,7 @@ void update_object_status() {
     i = 0;
     while(i < subma_num) {
         if(getHit(subma_ids[i]) == 0) {
+            base_score += getScore(subma_ids[i]);
             destory_object(subma_ids[i]);
             subma_num--;
             t = subma_ids[i];
@@ -149,6 +203,7 @@ void update_object_status() {
             i++;
         }
     }
+    update_bomb(bomb_num - bomb_count, rbomb_num - rbomb_count);
 }
 
 int check_intersection(int *rec1, int *rec2) {
@@ -161,16 +216,80 @@ int check_intersection(int *rec1, int *rec2) {
     return 1;
 }
 
-int check_game_end() {
-    if(subma_num == 0) {
-        return 1;
+void check_one_bomb_hit(int id) {
+    int i;
+    int flag = 0;
+    int rec1[4], rec2[4];
+    rec1[0] = getX(id);
+    rec1[1] = getY(id);
+    rec1[2] = rec1[0] + 30;
+    rec1[3] = rec1[1] + 30;
+    if(id < rbomb_base || isActive(id)) {
+        //Dolphin
+        for(i = 0; i < dolphin_num; i++) {
+            rec2[0] = getX(dolphin_ids[i]);
+            rec2[1] = getY(dolphin_ids[i]);
+            rec2[2] = rec2[0] + 60;
+            rec2[3] = rec2[1] + 40;
+
+            if(check_intersection(rec1, rec2)) {
+                hit(dolphin_ids[i], getHit(dolphin_ids[i]));
+                flag = 1;
+            }
+        }
+        //Submarine
+        for(i = 0; i < subma_num; i++) {
+            rec2[0] = getX(subma_ids[i]) + 35;
+            rec2[1] = getY(subma_ids[i]);
+            rec2[2] = rec2[0] + 10;
+            rec2[3] = rec2[1] + 40;
+
+            if(check_intersection(rec1, rec2)) {
+                hit(subma_ids[i], getHit(subma_ids[i]));
+                flag = 1;
+            }
+
+            rec2[0] -= 35;
+            rec2[2] = rec2[0] + 80;
+
+            if(check_intersection(rec1, rec2)) {
+                hit(subma_ids[i], getHit(subma_ids[i]));
+                flag = 1;
+            }
+        }
     }
-    else if(dolphin_num == 0) {
+    if(flag) {
+        hit(id, getHit(id));
+        play_sound(1);
+        play_sound(5);
+    }
+}
+
+void check_bomb_hits() {
+    int i;
+    for(i = 0; i < bomb_count; i++) {
+        check_one_bomb_hit(bomb_ids[i]);
+    }
+    for(i = 0; i < rbomb_count; i++) {
+        check_one_bomb_hit(rbomb_ids[i]);
+    }
+}
+
+int check_game_end() {
+    if(dolphin_num == 0) {
         return 2;
+    }
+    else if(subma_num == 0) {
+        return 1;
     }
     return 0;
 }
 
-void pp() {
-    create_remote_bomb(10, 12,23,2);
+void update_score() {
+    int i;
+    int score = base_score;
+    for(i = 0; i < subma_num; i++) {
+        score += getScore(subma_ids[i]);
+    }
+    setScore(score);
 }

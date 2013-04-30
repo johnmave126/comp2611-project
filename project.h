@@ -10,4 +10,4 @@ extern int bomb_ids[10];
 extern int bomb_base, bomb_num, bomb_count;
 extern int rbomb_ids[10];
 extern int rbomb_base, rbomb_num, rbomb_count;
-
+extern int base_score;
