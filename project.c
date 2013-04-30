@@ -216,7 +216,7 @@ int check_intersection(int *rec1, int *rec2) {
     return 1;
 }
 
-void __atribute__ ((noinline)) check_one_bomb_hit(int id) {
+__atribute__ ((noinline)) void check_one_bomb_hit(int id) {
     int i;
     int flag = 0;
     int rec1[4], rec2[4];
