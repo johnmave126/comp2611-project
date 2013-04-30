@@ -121,7 +121,7 @@ void play_sound(int id) {
 
 void emit_one_bomb() {
     if(bomb_count < bomb_num) {
-        create_simple_bomb(bomb_ids[bomb_count], getX(1), getY(1), 5);
+        create_simple_bomb(bomb_ids[bomb_count], getX(1) + 80, 260, 5);
         bomb_count++;
         update_bomb(bomb_num - bomb_count, rbomb_num - rbomb_count);
         play_sound(2);
@@ -130,7 +130,7 @@ void emit_one_bomb() {
 
 void emit_one_rbomb() {
     if(rbomb_count < rbomb_num) {
-        create_remote_bomb(rbomb_ids[rbomb_count], getX(1), getY(1), 5);
+        create_remote_bomb(rbomb_ids[rbomb_count], getX(1) + 80, 260, 5);
         rbomb_count++;
         update_bomb(bomb_num - bomb_count, rbomb_num - rbomb_count);
         play_sound(2);
@@ -207,10 +207,10 @@ void update_object_status() {
 }
 
 __attribute__ ((noinline)) int check_intersection(int *rec1, int *rec2) {
-    if(max(rec1[0], rec2[0]) > min(rec1[2], rec1[2])) {
+    if(max(rec1[0], rec2[0]) > min(rec1[2], rec2[2])) {
         return 0;
     }
-    if(max(rec1[1], rec2[1]) > min(rec1[3], rec1[3])) {
+    if(max(rec1[1], rec2[1]) > min(rec1[3], rec2[3])) {
         return 0;
     }
     return 1;

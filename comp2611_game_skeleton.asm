@@ -595,16 +595,17 @@ emit_one_bomb:
 	lw	$t0, 0($t2)
 	slt	$v0, $t0, $t1
 	beq	$v0, $zero, eob_exit
-	li	$a0, 1			# 0x1
-	li     $v0, 110
-	syscall
-	addu	$a1, $v0, $zero
 	la	$v0, bomb_ids
 	sll	$v1, $t0, 2
 
 	addu	$v0, $v1, $v0
-	lw	$a0, 0($v0)
-	addu	$a2, $a1, $zero
+	lw	$a3, 0($v0)
+	li	$a0, 1			# 0x1
+	li     $v0, 110
+	syscall
+	addu	$a1, $v0, $zero
+	addu	$a0, $a3, $zero
+	addu	$a2, $v1, $zero
 	li	$a3, 5			# 0x5
 	li     $v0, 106
 	syscall
@@ -638,16 +639,17 @@ emit_one_rbomb:
 	lw	$t0, 0($t2)
 	slt	$v0, $t0, $t1
 	beq	$v0, $zero, erb_exit
-	li	$a0, 1			# 0x1
-	li     $v0, 110
-	syscall
-	addu	$a1, $v0, $zero
 	la	$v0, rbomb_ids
 	sll	$v1, $t0, 2
 
 	addu	$v0, $v1, $v0
-	lw	$a0, 0($v0)
-	addu	$a2, $a1, $zero
+	lw	$a3, 0($v0)
+	li	$a0, 1			# 0x1
+	li     $v0, 110
+	syscall
+	addu	$a1, $v0, $zero
+	addu	$a0, $a3, $zero
+	addu	$a2, $v1, $zero
 	li	$a3, 5			# 0x5
 	li     $v0, 107
 	syscall
@@ -788,13 +790,7 @@ $L79:
 # submarin.
 #--------------------------------------------------------------------
 check_one_bomb_hit:
-	la	$v0, rbomb_base
-	lw	$a1, 0($v0)
 	addiu	$sp, $sp, -88
-	li     $v0, 110
-	syscall
-	slt	$a1, $a0, $a1
-	addiu	$v1, $v0, 30
 	sw	$s5, 68($sp)
 	sw	$ra, 84($sp)
 	sw	$fp, 80($sp)
@@ -806,16 +802,24 @@ check_one_bomb_hit:
 	sw	$s1, 52($sp)
 	sw	$s0, 48($sp)
 	addu	$s5, $a0, $zero
-	sw	$v1, 28($sp)
+	li     $v0, 110
+	syscall
+	addu	$a1, $v0, $zero
 	sw	$v0, 16($sp)
-	sw	$v0, 20($sp)
-	sw	$v1, 24($sp)
-	beq	$a1, $zero, $L65
+	la	$v0, rbomb_base
+	lw	$v0, 0($v0)
+	addiu	$a1, $a1, 30
+	addiu	$a2, $v1, 30
+	slt	$v0, $a0, $v0
+	sw	$a1, 24($sp)
+	sw	$a2, 28($sp)
+	sw	$v1, 20($sp)
+	beq	$v0, $zero, $L65
 $L67:
 	la	$s2, dolphin_ids
 
-	addu	$s1, $zero, $zero
 	addu	$s0, $zero, $zero
+	addu	$s1, $zero, $zero
 	la	$s7, dolphin_num
 	addiu	$s6, $sp, 32
 	addiu	$s4, $sp, 16
@@ -830,13 +834,15 @@ $L70:
 	addu	$a0, $s3, $zero
 	li     $v0, 110
 	syscall
-	addu	$a0, $s4, $zero
-	addiu	$a2, $v0, 40
-	addiu	$a3, $v0, 60
-	sw	$a3, 40($sp)
-	sw	$a2, 44($sp)
+	addu	$a1, $v0, $zero
 	sw	$v0, 32($sp)
-	sw	$v0, 36($sp)
+	addiu	$a2, $a1, 60
+	addiu	$v0, $v1, 40
+	addu	$a0, $s4, $zero
+	addu	$a1, $s6, $zero
+	sw	$a2, 40($sp)
+	sw	$v0, 44($sp)
+	sw	$v1, 36($sp)
 	jal	check_intersection
 	beq	$v0, $zero, $L69
 	addu	$a0, $s3, $zero
@@ -845,14 +851,13 @@ $L70:
 	addu	$a1, $v0, $zero
 	li     $v0, 114
 	syscall
-	li	$s1, 1			# 0x1
+	li	$s0, 1			# 0x1
 $L69:
-	addiu	$s0, $s0, 1
+	addiu	$s1, $s1, 1
 	addiu	$s2, $s2, 4
 $L66:
 	lw	$v0, 0($s7)
-	addu	$a1, $s6, $zero
-	slt	$v0, $s0, $v0
+	slt	$v0, $s1, $v0
 	bne	$v0, $zero, $L70
 	la	$s3, subma_ids
 
@@ -866,15 +871,16 @@ $L74:
 	addu	$a0, $s4, $zero
 	li     $v0, 110
 	syscall
-	addu	$s0, $v0, $zero
-	addiu	$a3, $s0, 35
-	addiu	$v0, $v0, 40
-	addiu	$a2, $s0, 45
+	addu	$s1, $v0, $zero
+	addiu	$v0, $v0, 35
+	sw	$v0, 32($sp)
+	addiu	$v0, $v1, 40
+	addiu	$a2, $s1, 45
 	addu	$a0, $s6, $zero
-	sw	$a3, 32($sp)
+	addu	$a1, $s7, $zero
 	sw	$a2, 40($sp)
 	sw	$v0, 44($sp)
-	sw	$s0, 36($sp)
+	sw	$v1, 36($sp)
 	jal	check_intersection
 	beq	$v0, $zero, $L72
 	addu	$a0, $s4, $zero
@@ -883,13 +889,13 @@ $L74:
 	addu	$a1, $v0, $zero
 	li     $v0, 114
 	syscall
-	li	$s1, 1			# 0x1
+	li	$s0, 1			# 0x1
 $L72:
-	addiu	$v0, $s0, 80
+	addiu	$v0, $s1, 80
 	addu	$a0, $s6, $zero
 	addu	$a1, $s7, $zero
 	sw	$v0, 40($sp)
-	sw	$s0, 32($sp)
+	sw	$s1, 32($sp)
 	jal	check_intersection
 	beq	$v0, $zero, $L73
 	addu	$a0, $s4, $zero
@@ -898,16 +904,15 @@ $L72:
 	addu	$a1, $v0, $zero
 	li     $v0, 114
 	syscall
-	li	$s1, 1			# 0x1
+	li	$s0, 1			# 0x1
 $L73:
 	addiu	$s2, $s2, 1
 	addiu	$s3, $s3, 4
 $L71:
 	lw	$v0, 0($fp)
-	addu	$a1, $s7, $zero
 	slt	$v0, $s2, $v0
 	bne	$v0, $zero, $L74
-	beq	$s1, $zero, $L75
+	beq	$s0, $zero, $L75
 	addu	$a0, $s5, $zero
 	li     $v0, 118
 	syscall
@@ -935,8 +940,6 @@ $L75:
 	lw	$s0, 48($sp)
 	addiu	$sp, $sp, 88
 	jr	$ra
-
-
 
 
 #--------------------------------------------------------------------
@@ -1240,7 +1243,39 @@ mb_dl:	li $v0, 118
 		li $v0, 114
 		syscall
 		j mb_loop
-mb_exit:	lw $ra, 8($sp)
+mb_exit:
+		li $t2, -1
+		la $t3, rbomb_count
+		lw $t3, 0($t3)
+		la $t5, rbomb_ids
+mr_loop:addi $t2, $t2, 1
+		slt $t4, $t2, $t3
+		beq $t4, $zero, mr_exit
+		sll $t4, $t2, 2
+		add $t4, $t4, $t5
+		lw	$t4, 0($t4)
+		li $v0, 110
+		add $a0, $t4, $zero # id of rbomb
+		syscall
+		add $s0, $v0, $zero # x
+		add $s1, $v1, $zero # yold
+		# the bomb speed is 5
+		addi $t0, $zero, 595
+		slt $t1, $t0, $s1
+		bne $t1, $zero, mr_dl
+		li $v0, 121 # no need to turn direction, move one step
+		add $a0, $t4, $zero
+		syscall 
+		j mr_loop
+mr_dl:	li $v0, 118
+		syscall
+		add $a1, $v0, $zero
+		li $v0, 114
+		syscall
+		j mr_loop
+mr_exit:
+
+		lw $ra, 8($sp)
 		lw $s0, 4($sp)
 		lw $s1, 0($sp)
 		addi $sp, $sp, 12
