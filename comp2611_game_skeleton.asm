@@ -747,7 +747,7 @@ md_loop:addi $t2, $t2, 1
 		add $t4, $t4, $t5
 		lw	$t4, 0($t4)
 		li $v0, 110
-		add $a0, $t4, $zero # id of ship
+		add $a0, $t4, $zero # id of dolphin
 		syscall
 		add $s0, $v0, $zero #xold
 		add $s1, $v1, $zero # y
@@ -760,24 +760,24 @@ md_loop:addi $t2, $t2, 1
 		slt $t1, $t0, $s0
 		bne $t1, $zero, md_lt
 		li $v0, 121 # no need to turn direction, move one step
-		li $a0, 1
+		add $a0, $t4, $zero
 		syscall 
 		j md_loop
 md_lt: 	 	li $t0, 1475 # turns left
 		sub $a1, $t0, $s0
 		add $a2, $s1, $zero
 		li $v0, 120 # set object location
-		li $a0, 1
+		add $a0, $t4, $zero
 		syscall
 		li $v0, 113
 		li $a1, 0 # turn left
-		li $a0, 1
+		add $a0, $t4, $zero
 		syscall 
 		j md_loop
 md_left:	slti $t0, $s0, 5
 		bne $t0, $zero, md_rt
 		li $v0, 121 # no need to turn direction, move one step
-		li $a0, 1
+		add $a0, $t4, $zero
 		syscall
 		j md_loop
 md_rt:		li $a0, 1 # turn right
@@ -788,7 +788,7 @@ md_rt:		li $a0, 1 # turn right
 		syscall
 		li $v0, 113
 		li $a1, 1 # turn right
-		li $a0, 1
+		add $a0, $t4, $zero
 		syscall
 		j md_loop
 md_exit:	lw $ra, 8($sp)
@@ -821,7 +821,7 @@ msu_loop:addi $t2, $t2, 1
 		add $t4, $t4, $t5
 		lw	$t4, 0($t4)
 		li $v0, 110
-		add $a0, $t4, $zero # id of ship
+		add $a0, $t4, $zero # id of submarine
 		syscall
 		add $s0, $v0, $zero #xold
 		add $s1, $v1, $zero # y
@@ -834,24 +834,24 @@ msu_loop:addi $t2, $t2, 1
 		slt $t1, $t0, $s0
 		bne $t1, $zero, msu_lt
 		li $v0, 121 # no need to turn direction, move one step
-		li $a0, 1
+		add $a0, $t4, $zero
 		syscall 
-		j md_loop
+		j msu_loop
 msu_lt: 	 	li $t0, 1434 # turns left
 		sub $a1, $t0, $s0
 		add $a2, $s1, $zero
 		li $v0, 120 # set object location
-		li $a0, 1
+		add $a0, $t4, $zero
 		syscall
 		li $v0, 113
 		li $a1, 0 # turn left
-		li $a0, 1
+		add $a0, $t4, $zero
 		syscall 
 		j msu_loop
 msu_left:	slti $t0, $s0, 6
 		bne $t0, $zero, msu_rt
 		li $v0, 121 # no need to turn direction, move one step
-		li $a0, 1
+		add $a0, $t4, $zero
 		syscall
 		j msu_loop
 msu_rt:		li $a0, 1 # turn right
@@ -862,7 +862,7 @@ msu_rt:		li $a0, 1 # turn right
 		syscall
 		li $v0, 113
 		li $a1, 1 # turn right
-		li $a0, 1
+		add $a0, $t4, $zero
 		syscall
 		j msu_loop
 msu_exit:	lw $ra, 8($sp)
@@ -878,8 +878,44 @@ msu_exit:	lw $ra, 8($sp)
 # increase the available number of boms.
 # Eg:=> if y_old + speed >= 600, then destory it;
 #--------------------------------------------------------------------
-
-
+move_bombs:	addi $sp, $sp, -12
+		sw $ra, 8($sp)
+		sw $s0, 4($sp)
+		sw $s1, 0($sp)
+		li $t2, -1
+		la $t3, bomb_count
+		lw $t3, 0($t3)
+		la $t5, bomb_ids
+mb_loop:addi $t2, $t2, 1
+		slt $t4, $t2, $t3
+		beq $t4, $zero, mb_exit
+		sll $t4, $t2, 2
+		add $t4, $t4, $t5
+		lw	$t4, 0($t4)
+		li $v0, 110
+		add $a0, $t4, $zero # id of bomb
+		syscall
+		add $s0, $v0, $zero # x
+		add $s1, $v1, $zero # yold
+		# the bomb speed is 5
+		addi $t0, $zero, 595
+		slt $t1, $t0, $s1
+		bne $t1, $zero, mb_dl
+		li $v0, 121 # no need to turn direction, move one step
+		add $a0, $t4, $zero
+		syscall 
+		j md_loop
+mb_dl:	li $v0, 118
+		syscall
+		add $a1, $v0, $zero
+		li $v0, 114
+		syscall
+		j mb_loop
+mb_exit:	lw $ra, 8($sp)
+		lw $s0, 4($sp)
+		lw $s1, 0($sp)
+		addi $sp, $sp, 12
+		jr $ra
 
 
 #--------------------------------------------------------------------
