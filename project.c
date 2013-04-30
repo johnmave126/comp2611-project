@@ -34,7 +34,7 @@ int getX(int id) {
     register int t2 asm("v0");
     __asm__(
         "li     $v0, 110\n\t"
-        "syscall\n\t":"=r"(t2):"r"(t1):"v0", "v1");
+        "syscall\n\t":"=r"(t2):"r"(t1):"v1");
     return t2;
 }
 
@@ -52,7 +52,7 @@ int getHit(int id) {
     register int t2 asm("v0");
     __asm__(
         "li     $v0, 118\n\t"
-        "syscall\n\t":"=r"(t2):"r"(t1):"v0");
+        "syscall\n\t":"=r"(t2):"r"(t1));
     return t2;
 }
 
@@ -61,7 +61,7 @@ int getScore(int id) {
     register int t2 asm("v0");
     __asm__(
         "li     $v0, 115\n\t"
-        "syscall\n\t":"=r"(t2):"r"(t1):"v0");
+        "syscall\n\t":"=r"(t2):"r"(t1));
     return t2;
 }
 
@@ -93,7 +93,7 @@ int isActive(int id) {
     register int t2 asm("v0");
     __asm__(
         "li     $v0, 108\n\t"
-        "syscall\n\t":"=r"(t2):"r"(t1):"v0");
+        "syscall\n\t":"=r"(t2):"r"(t1));
     return t2;
 }
 
