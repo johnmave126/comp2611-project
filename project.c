@@ -32,7 +32,7 @@ void create_remote_bomb(int id, int x_loc, int y_loc, int speed) {
 int getX(int id) {
     const register int t1 asm("a0") = id;
     register int t2 asm("v0");
-    __asm__(
+    __asm__ __volatile__(
         "li     $v0, 110\n\t"
         "syscall\n\t":"=r"(t2):"r"(t1):"v1");
     return t2;
@@ -41,7 +41,7 @@ int getX(int id) {
 int getY(int id) {
     const register int t1 asm("a0") = id;
     register int t2 asm("v1");
-    __asm__(
+    __asm__ __volatile__(
         "li     $v0, 110\n\t"
         "syscall\n\t":"=r"(t2):"r"(t1):"v0");
     return t2;
@@ -121,6 +121,8 @@ void play_sound(int id) {
 
 void emit_one_bomb() {
     if(bomb_count < bomb_num) {
+        int x = getX(1);
+        int y = getY(1);
         create_simple_bomb(bomb_ids[bomb_count], getX(1), getY(1), 5);
         bomb_count++;
         update_bomb(bomb_num - bomb_count, rbomb_num - rbomb_count);

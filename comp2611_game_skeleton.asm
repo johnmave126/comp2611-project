@@ -24,6 +24,7 @@ rbomb_ids:	.word -1:10 # used to keep track of the ids of remote bombs
 rbomb_base:	.word 80 # base id of the remote bomb
 rbomb_num:	.word 0 # the number of remote bombs
 rbomb_count:	.word 0 # the "running" number of remote bombs
+base_score:		.word 0 # the base score
 
 .text
 main:		la $a0, title
@@ -587,7 +588,42 @@ pi_exit:	lw $ra, 0($sp)
 # 1. check whether there are avaiable bombs to use.
 # 2. if yes, create one bomb object
 #--------------------------------------------------------------------
+emit_one_bomb:
+	la	$v0, bomb_num
+	la	$t2, bomb_count
+	lw	$t1, 0($v0)
+	lw	$t0, 0($t2)
+	slt	$v0, $t0, $t1
+	beq	$v0, $zero, eob_exit
+	li	$a0, 1			# 0x1
+	li     $v0, 110
+	syscall
+	addu	$a1, $v0, $zero
+	la	$v0, bomb_ids
+	sll	$v1, $t0, 2
 
+	addu	$v0, $v1, $v0
+	lw	$a0, 0($v0)
+	addu	$a2, $a1, $zero
+	li	$a3, 5			# 0x5
+	li     $v0, 106
+	syscall
+	la	$v0, rbomb_num
+	lw	$a1, 0($v0)
+	la	$v0, rbomb_count
+	lw	$v0, 0($v0)
+	addiu	$a0, $t0, 1
+	sw	$a0, 0($t2)
+	subu	$a1, $a1, $v0
+	subu	$a0, $t1, $a0
+	li     $v0, 123
+	syscall
+	li	$a0, 2			# 0x2
+	li     $a1, 0
+	li     $v0, 105
+	syscall
+eob_exit:
+	jr	$ra
 
 
 #--------------------------------------------------------------------
@@ -595,14 +631,65 @@ pi_exit:	lw $ra, 0($sp)
 # 1. check whether there are avaiable remote bombs to use.
 # 2. if yes, create one remote bomb object
 #--------------------------------------------------------------------
+emit_one_rbomb:
+	la	$v0, rbomb_num
+	la	$t2, rbomb_count
+	lw	$t1, 0($v0)
+	lw	$t0, 0($t2)
+	slt	$v0, $t0, $t1
+	beq	$v0, $zero, erb_exit
+	li	$a0, 1			# 0x1
+	li     $v0, 110
+	syscall
+	addu	$a1, $v0, $zero
+	la	$v0, rbomb_ids
+	sll	$v1, $t0, 2
 
+	addu	$v0, $v1, $v0
+	lw	$a0, 0($v0)
+	addu	$a2, $a1, $zero
+	li	$a3, 5			# 0x5
+	li     $v0, 107
+	syscall
+	la	$v0, bomb_num
+	lw	$a0, 0($v0)
+	la	$v0, bomb_count
+	lw	$v0, 0($v0)
+	addiu	$a1, $t0, 1
+	sw	$a1, 0($t2)
+	subu	$a0, $a0, $v0
+	subu	$a1, $t1, $a1
+	li     $v0, 123
+	syscall
+	li	$a0, 2			# 0x2
+	li     $a1, 0
+	li     $v0, 105
+	syscall
+erb_exit:
+	jr	$ra
 
 
 #--------------------------------------------------------------------
 # func activate_rbombs
 # Activate all the remote bombs: change their status to "activated"!
 #--------------------------------------------------------------------
+activate_rbombs:
+	la	$v0, rbomb_count
+	la	$a1, rbomb_ids
+	lw	$a2, 0($v0)
 
+	addu	$v1, $zero, $zero
+	j	ar_next
+ar_loop:
+	lw	$a0, 0($a1)
+	li     $v0, 109
+	syscall
+	addiu	$v1, $v1, 1
+	addiu	$a1, $a1, 4
+ar_next:
+	slt	$v0, $v1, $a2
+	bne	$v0, $zero, ar_loop
+	jr	$ra
 
 
 #--------------------------------------------------------------------
@@ -614,7 +701,25 @@ pi_exit:	lw $ra, 0($sp)
 # intersected!
 # @return 1: true; 0: false
 #--------------------------------------------------------------------
+check_intersection:
+	lw	$v0, 0($a0)
+	lw	$v1, 0($a1)
+	lw	$a2, 8($a0)
+	slt	$a3, $v1, $v0
+	movn	$v1, $v0, $a3
+	slt	$v1, $a2, $v1
+	addu	$v0, $zero, $zero
+	bne	$v1, $zero, ci_exit
 
+	lw	$v1, 4($a0)
+	lw	$a1, 4($a1)
+	lw	$a0, 12($a0)
+	slt	$v0, $a1, $v1
+	movz	$v1, $a1, $v0
+	slt	$v0, $a0, $v1
+	xori	$v0, $v0, 0x1
+ci_exit:
+	jr	$ra
 
 
 
@@ -627,7 +732,52 @@ pi_exit:	lw $ra, 0($sp)
 # 3. The dolphin will always hurt; but submarine depends!
 # 4. update the score value! 
 #--------------------------------------------------------------------
+check_bomb_hits:
+	addiu	$sp, $sp, -32
+	sw	$s1, 20($sp)
+	la	$s1, bomb_ids
+	sw	$s2, 24($sp)
+	sw	$s0, 16($sp)
+	sw	$ra, 28($sp)
 
+	addu	$s0, $zero, $zero
+	la	$s2, bomb_count
+	j	$L77
+
+$L78:
+	lw	$a0, 0($s1)
+	addiu	$s0, $s0, 1
+	jal	check_one_bomb_hit
+
+	addiu	$s1, $s1, 4
+$L77:
+	lw	$v0, 0($s2)
+	slt	$v0, $s0, $v0
+	bne	$v0, $zero, $L78
+
+	la	$s1, rbomb_ids
+
+	addu	$s0, $zero, $zero
+	la	$s2, rbomb_count
+	j	$L79
+
+$L80:
+	lw	$a0, 0($s1)
+	addiu	$s0, $s0, 1
+	jal	check_one_bomb_hit
+
+	addiu	$s1, $s1, 4
+$L79:
+	lw	$v0, 0($s2)
+	slt	$v0, $s0, $v0
+	bne	$v0, $zero, $L80
+
+	lw	$ra, 28($sp)
+	lw	$s2, 24($sp)
+	lw	$s1, 20($sp)
+	lw	$s0, 16($sp)
+	addiu	$sp, $sp, 32
+	jr	$ra
 
 
 
@@ -637,7 +787,154 @@ pi_exit:	lw $ra, 0($sp)
 # Given the bomb id, check whether it hits with any dolphin or
 # submarin.
 #--------------------------------------------------------------------
+check_one_bomb_hit:
+	la	$v0, rbomb_base
+	lw	$a1, 0($v0)
+	addiu	$sp, $sp, -88
+	li     $v0, 110
+	syscall
+	slt	$a1, $a0, $a1
+	addiu	$v1, $v0, 30
+	sw	$s5, 68($sp)
+	sw	$ra, 84($sp)
+	sw	$fp, 80($sp)
+	sw	$s7, 76($sp)
+	sw	$s6, 72($sp)
+	sw	$s4, 64($sp)
+	sw	$s3, 60($sp)
+	sw	$s2, 56($sp)
+	sw	$s1, 52($sp)
+	sw	$s0, 48($sp)
+	addu	$s5, $a0, $zero
+	sw	$v1, 28($sp)
+	sw	$v0, 16($sp)
+	sw	$v0, 20($sp)
+	sw	$v1, 24($sp)
+	beq	$a1, $zero, $L65
+$L67:
+	la	$s2, dolphin_ids
 
+	addu	$s1, $zero, $zero
+	addu	$s0, $zero, $zero
+	la	$s7, dolphin_num
+	addiu	$s6, $sp, 32
+	addiu	$s4, $sp, 16
+	j	$L66
+$L65:
+	li     $v0, 108
+	syscall
+	bne	$v0, $zero, $L67
+	j	$L75
+$L70:
+	lw	$s3, 0($s2)
+	addu	$a0, $s3, $zero
+	li     $v0, 110
+	syscall
+	addu	$a0, $s4, $zero
+	addiu	$a2, $v0, 40
+	addiu	$a3, $v0, 60
+	sw	$a3, 40($sp)
+	sw	$a2, 44($sp)
+	sw	$v0, 32($sp)
+	sw	$v0, 36($sp)
+	jal	check_intersection
+	beq	$v0, $zero, $L69
+	addu	$a0, $s3, $zero
+	li     $v0, 118
+	syscall
+	addu	$a1, $v0, $zero
+	li     $v0, 114
+	syscall
+	li	$s1, 1			# 0x1
+$L69:
+	addiu	$s0, $s0, 1
+	addiu	$s2, $s2, 4
+$L66:
+	lw	$v0, 0($s7)
+	addu	$a1, $s6, $zero
+	slt	$v0, $s0, $v0
+	bne	$v0, $zero, $L70
+	la	$s3, subma_ids
+
+	addu	$s2, $zero, $zero
+	la	$fp, subma_num
+	addiu	$s7, $sp, 32
+	addiu	$s6, $sp, 16
+	j	$L71
+$L74:
+	lw	$s4, 0($s3)
+	addu	$a0, $s4, $zero
+	li     $v0, 110
+	syscall
+	addu	$s0, $v0, $zero
+	addiu	$a3, $s0, 35
+	addiu	$v0, $v0, 40
+	addiu	$a2, $s0, 45
+	addu	$a0, $s6, $zero
+	sw	$a3, 32($sp)
+	sw	$a2, 40($sp)
+	sw	$v0, 44($sp)
+	sw	$s0, 36($sp)
+	jal	check_intersection
+	beq	$v0, $zero, $L72
+	addu	$a0, $s4, $zero
+	li     $v0, 118
+	syscall
+	addu	$a1, $v0, $zero
+	li     $v0, 114
+	syscall
+	li	$s1, 1			# 0x1
+$L72:
+	addiu	$v0, $s0, 80
+	addu	$a0, $s6, $zero
+	addu	$a1, $s7, $zero
+	sw	$v0, 40($sp)
+	sw	$s0, 32($sp)
+	jal	check_intersection
+	beq	$v0, $zero, $L73
+	addu	$a0, $s4, $zero
+	li     $v0, 118
+	syscall
+	addu	$a1, $v0, $zero
+	li     $v0, 114
+	syscall
+	li	$s1, 1			# 0x1
+$L73:
+	addiu	$s2, $s2, 1
+	addiu	$s3, $s3, 4
+$L71:
+	lw	$v0, 0($fp)
+	addu	$a1, $s7, $zero
+	slt	$v0, $s2, $v0
+	bne	$v0, $zero, $L74
+	beq	$s1, $zero, $L75
+	addu	$a0, $s5, $zero
+	li     $v0, 118
+	syscall
+	addu	$a1, $v0, $zero
+	li     $v0, 114
+	syscall
+	li	$a0, 1			# 0x1
+	li     $a1, 0
+	li     $v0, 105
+	syscall
+	li	$a0, 5			# 0x5
+	li     $a1, 0
+	li     $v0, 105
+	syscall
+$L75:
+	lw	$ra, 84($sp)
+	lw	$fp, 80($sp)
+	lw	$s7, 76($sp)
+	lw	$s6, 72($sp)
+	lw	$s5, 68($sp)
+	lw	$s4, 64($sp)
+	lw	$s3, 60($sp)
+	lw	$s2, 56($sp)
+	lw	$s1, 52($sp)
+	lw	$s0, 48($sp)
+	addiu	$sp, $sp, 88
+	jr	$ra
 
 
 
@@ -646,7 +943,29 @@ pi_exit:	lw $ra, 0($sp)
 # func: update_score
 # The score will be collected from submarines.
 #--------------------------------------------------------------------
+update_score:
+	la	$v0, base_score
+	lw	$v1, 0($v0)
+	la	$a2, subma_ids
+	la	$v0, subma_num
+	lw	$a3, 0($v0)
 
+	addu	$a1, $zero, $zero
+	j	us_exit
+us_loop:
+	lw	$a0, 0($a2)
+	addiu	$a1, $a1, 1
+	li     $v0, 115
+	syscall
+	addiu	$a2, $a2, 4
+	addu	$v1, $v1, $v0
+us_exit:
+	slt	$v0, $a1, $a3
+	bne	$v0, $zero, us_loop
+	addu	$a0, $v1, $zero
+	li     $v0, 117
+	syscall
+	jr	$ra
 
 
 
@@ -655,7 +974,17 @@ pi_exit:	lw $ra, 0($sp)
 # Check whether the game is over!
 # $v0=0: not end; =1: win; =2: lose
 #--------------------------------------------------------------------
+check_game_end:
+	la	$v0, dolphin_num
+	lw	$v1, 0($v0)
+	li	$v0, 2			# 0x2
+	beq	$v1, $zero, cge_exit
 
+	la	$v0, subma_num
+	lw	$v0, 0($v0)
+	slti	$v0, $v0, 1
+cge_exit:
+	jr	$ra
 
 
 	
@@ -780,7 +1109,7 @@ md_left:	slti $t0, $s0, 5
 		add $a0, $t4, $zero
 		syscall
 		j md_loop
-md_rt:		li $a0, 1 # turn right
+md_rt:	add $a0, $t4, $zero # turn right
 		li $t0, 5
 		sub $a1, $t0, $s0
 		add $a2, $s1, $zero
@@ -854,7 +1183,7 @@ msu_left:	slti $t0, $s0, 6
 		add $a0, $t4, $zero
 		syscall
 		j msu_loop
-msu_rt:		li $a0, 1 # turn right
+msu_rt:	add $a0, $t4, $zero # turn right
 		li $t0, 6
 		sub $a1, $t0, $s0
 		add $a2, $s1, $zero
@@ -924,8 +1253,171 @@ mb_exit:	lw $ra, 8($sp)
 # 2. if the submarine is destroyed, then destroy the game object;
 # 3. if the (r)bomb is already bombed, then destroy the game object;
 #--------------------------------------------------------------------
+update_object_status:
+	la	$v0, dolphin_num
+	la	$a3, dolphin_ids
+	la	$a2, dolphin_locs
+	lw	$v1, 0($v0)
 
 
+	addu	$a1, $zero, $zero
+	j	$L56
+$L45:
+	lw	$t1, 0($t0)
+	addu	$a0, $t1, $zero
+	li     $v0, 118
+	syscall
+	bne	$v0, $zero, $L44
+	li     $v0, 116
+	syscall
+	addiu	$v1, $v1, -1
+	sll	$v0, $v1, 3
+	addu	$v0, $v0, $a2
+	lw	$t3, 0($v0)
+	sll	$t2, $a1, 3
+	addu	$t2, $t2, $a2
+	sll	$v0, $v1, 2
+	sll	$a0, $v1, 3
+	sw	$t3, 0($t2)
+	addu	$v0, $v0, $a3
+	addu	$a0, $a2, $a0
+	lw	$t2, 4($a0)
+	lw	$t3, 0($v0)
+	sll	$a0, $a1, 3
+	addu	$a0, $a2, $a0
+	sw	$t3, 0($t0)
+	sw	$t2, 4($a0)
+	sw	$t1, 0($v0)
+	j	$L56
+$L44:
+	addiu	$a1, $a1, 1
+$L56:
+	sll	$t0, $a1, 2
+	slt	$v0, $a1, $v1
+	addu	$t0, $t0, $a3
+	bne	$v0, $zero, $L45
+	la	$v0, dolphin_num
+	sw	$v1, 0($v0)
+	la	$v0, base_score
+	lw	$a3, 0($v0)
+	la	$t0, subma_ids
+	la	$v0, subma_num
+	la	$a2, subma_locs
+	lw	$v1, 0($v0)
+
+
+	addu	$a1, $zero, $zero
+	j	$L57
+$L48:
+	lw	$t2, 0($t1)
+	addu	$a0, $t2, $zero
+	li     $v0, 118
+	syscall
+	bne	$v0, $zero, $L47
+	li     $v0, 115
+	syscall
+	addu	$a3, $a3, $v0
+	li     $v0, 116
+	syscall
+	addiu	$v1, $v1, -1
+	sll	$v0, $v1, 3
+	addu	$v0, $v0, $a2
+	lw	$t4, 0($v0)
+	sll	$t3, $a1, 3
+	addu	$t3, $t3, $a2
+	sll	$v0, $v1, 2
+	sll	$a0, $v1, 3
+	sw	$t4, 0($t3)
+	addu	$v0, $v0, $t0
+	addu	$a0, $a2, $a0
+	lw	$t3, 4($a0)
+	lw	$t4, 0($v0)
+	sll	$a0, $a1, 3
+	addu	$a0, $a2, $a0
+	sw	$t4, 0($t1)
+	sw	$t3, 4($a0)
+	sw	$t2, 0($v0)
+	j	$L57
+$L47:
+	addiu	$a1, $a1, 1
+$L57:
+	sll	$t1, $a1, 2
+	slt	$v0, $a1, $v1
+	addu	$t1, $t1, $t0
+	bne	$v0, $zero, $L48
+	la	$v0, base_score
+	sw	$a3, 0($v0)
+	la	$v0, subma_num
+	sw	$v1, 0($v0)
+	la	$a1, bomb_ids
+	la	$v0, bomb_count
+	lw	$a2, 0($v0)
+
+	addu	$v1, $zero, $zero
+	j	$L58
+$L51:
+	lw	$t0, 0($a3)
+	addu	$a0, $t0, $zero
+	li     $v0, 118
+	syscall
+	bne	$v0, $zero, $L50
+	li     $v0, 116
+	syscall
+	addiu	$a2, $a2, -1
+	sll	$v0, $a2, 2
+	addu	$v0, $v0, $a1
+	lw	$a0, 0($v0)
+	sw	$a0, 0($a3)
+	sw	$t0, 0($v0)
+	j	$L58
+$L50:
+	addiu	$v1, $v1, 1
+$L58:
+	sll	$a3, $v1, 2
+	slt	$v0, $v1, $a2
+	addu	$a3, $a3, $a1
+	bne	$v0, $zero, $L51
+	la	$v0, bomb_count
+	sw	$a2, 0($v0)
+	la	$a3, rbomb_ids
+	la	$v0, rbomb_count
+	lw	$v1, 0($v0)
+
+	addu	$a1, $zero, $zero
+	j	$L59
+$L54:
+	lw	$t1, 0($t0)
+	addu	$a0, $t1, $zero
+	li     $v0, 118
+	syscall
+	bne	$v0, $zero, $L53
+	li     $v0, 116
+	syscall
+	addiu	$v1, $v1, -1
+	sll	$v0, $v1, 2
+	addu	$v0, $v0, $a3
+	lw	$a0, 0($v0)
+	sw	$a0, 0($t0)
+	sw	$t1, 0($v0)
+	j	$L59
+$L53:
+	addiu	$a1, $a1, 1
+$L59:
+	sll	$t0, $a1, 2
+	slt	$v0, $a1, $v1
+	addu	$t0, $t0, $a3
+	bne	$v0, $zero, $L54
+	la	$v0, rbomb_num
+	lw	$a1, 0($v0)
+	la	$v0, bomb_num
+	lw	$a0, 0($v0)
+	la	$v0, rbomb_count
+	sw	$v1, 0($v0)
+	subu	$a0, $a0, $a2
+	subu	$a1, $a1, $v1
+	li     $v0, 123
+	syscall
+	jr	$ra
 
 
 
