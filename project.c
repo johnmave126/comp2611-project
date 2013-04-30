@@ -212,7 +212,7 @@ __attribute__ ((noinline)) int check_intersection(int *rec1, int *rec2) {
     }
     if(max(rec1[1], rec2[1]) > min(rec1[3], rec1[3])) {
         return 0;
-    }P·
+    }
     return 1;
 }
 
